@@ -15,8 +15,7 @@ Ext.define('CustomApp', {
 		});
 
 		this.add(this.pulldownContainer);
-		//this._loadData();
-		this._loadIterations();
+		this._loadRelease();
     },
 
 
@@ -28,8 +27,8 @@ Ext.define('CustomApp', {
     		width: 350,
     		listeners: {
     			ready: function(combobox){
-    				//this._loadData();
-    				this._loadSeverity();
+    				this._loadData();
+    				//this._loadSeverity();
     			},
     			select: function(combobox, records){
     				this._loadData();
@@ -38,10 +37,54 @@ Ext.define('CustomApp', {
     		}
     	});
 
-    	this.pulldownContainer.add(this.iterComboBox);
+    	//this.pulldownContainer.add(this.iterComboBox);
     },
 
-_loadSeverity: function(){
+
+_loadRelease: function(){
+    	this.releaseComboBox = Ext.create('Rally.ui.combobox.FieldValueComboBox', {
+    		model: 'User Story',
+    		field: 'Release',
+    		fieldLabel: 'Release',
+    		labelAlign: 'right',
+    		listeners: {
+    			ready: function(combobox){
+    				//this._loadData();
+    				this._loadState();
+    			},
+    			select: function(combobox, records){
+    				this._loadData();
+    			},
+    			scope: this
+    		}
+    	});
+
+    	this.pulldownContainer.add(this.releaseComboBox);
+    },
+
+
+
+    _loadState: function(){
+    	this.stateComboBox = Ext.create('Rally.ui.combobox.FieldValueComboBox', {
+    		model: 'User Story',
+    		field: 'ScheduleState',
+    		fieldLabel: 'State',
+    		labelAlign: 'right',
+    		listeners: {
+    			ready: function(combobox){
+    				this._loadData();
+    			},
+    			select: function(combobox, records){
+    				this._loadData();
+    			},
+    			scope: this
+    		}
+    	});
+
+    	this.pulldownContainer.add(this.stateComboBox);
+    },
+
+/*_loadSeverity: function(){
     	this.severityComboBox = Ext.create('Rally.ui.combobox.FieldValueComboBox', {
     		model: 'Defect',
     		field: 'Severity',
@@ -58,28 +101,35 @@ _loadSeverity: function(){
     		}
     	});
 
-    	this.pulldownContainer.add(this.severityComboBox);
-    },
+    	//this.pulldownContainer.add(this.severityComboBox);
+    },*/
 
     //Get Data from rally
     _loadData: function(){
 
-    	var selectedIterRef = this.iterComboBox.getRecord().get("_ref");
-    	var severityValue = this.severityComboBox.getRecord().get("value");
+    	//var selectedIterRef = this.iterComboBox.getRecord().get("_ref");
+    	//var severityValue = this.severityComboBox.getRecord().get("value");
+    	var releaseValue = this.releaseComboBox.getRecord().get("name");
+    	var stateValue = this.stateComboBox.getRecord().get("value");
 
-var myFilters =[
+		var myFilters =[
         {
-            property: 'Iteration',
+            property: 'Release.Name',
             operation: '=',
-            value: selectedIterRef
+            value: releaseValue
+        },
+         {
+            property: 'Project.Name',
+            operation: '=',
+            value: 'Mobile Team'
         },
         {
-            property: 'Severity',
+            property: 'ScheduleState',
             operation: '=',
-            value: severityValue
+            value: stateValue
         },
-    ];
-    	
+        
+    	];
 
     //if store exist, just load new data
     if(this.defaultStore){
@@ -90,7 +140,7 @@ var myFilters =[
     else{
     //create store
     this.defaultStore = Ext.create('Rally.data.wsapi.Store', {
-    model: 'Defect',
+    model: 'User Story',
     autoLoad: true,
     filters: myFilters,
     listeners: {
@@ -102,7 +152,7 @@ var myFilters =[
         },
         scope: this
     },
-    fetch: ['FormattedID','Name', 'Severity', 'Iteration', 'State']
+    fetch: ['FormattedID','Name', 'Project', 'Release', 'ScheduleState']
 });
 }
     },
@@ -113,7 +163,7 @@ var myFilters =[
     		this.myGrid = Ext.create('Rally.ui.grid.Grid', {
 			store: myStoryStore,
  			columnCfgs: [
-             'FormattedID', 'Name','State', 'Iteration'
+             'FormattedID', 'Name', 'ScheduleState'
              ]
 			});
 
